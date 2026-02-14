@@ -1,6 +1,9 @@
 package main
 
 import (
+	"strings"
+
+	"github.com/finb/bark-server/v2/harmony"
 	"github.com/gofiber/fiber/v2"
 	"github.com/mritd/logger"
 )
@@ -8,6 +11,7 @@ import (
 type DeviceInfo struct {
 	DeviceKey   string `form:"device_key,omitempty" json:"device_key,omitempty" xml:"device_key,omitempty" query:"device_key,omitempty"`
 	DeviceToken string `form:"device_token,omitempty" json:"device_token,omitempty" xml:"device_token,omitempty" query:"device_token,omitempty"`
+	Platform    string `form:"platform,omitempty" json:"platform,omitempty" xml:"platform,omitempty" query:"platform,omitempty"`
 
 	// compatible with old req
 	OldDeviceKey   string `form:"key,omitempty" json:"key,omitempty" xml:"key,omitempty" query:"key,omitempty"`
@@ -50,9 +54,15 @@ func doRegister(c *fiber.Ctx, compat bool) error {
 		}
 	}
 
-	// DeviceToken length is variable, but should not be too long.
-	if len(deviceInfo.DeviceToken) > 160 {
+	platform := strings.ToLower(strings.TrimSpace(deviceInfo.Platform))
+	isHarmony := platform == "harmony" || platform == "harmonyos" || platform == "hmos"
+
+	if !isHarmony && len(deviceInfo.DeviceToken) > 160 {
 		return c.Status(400).JSON(failed(400, "device token is invalid"))
+	}
+
+	if isHarmony && !strings.HasPrefix(deviceInfo.DeviceToken, harmony.TokenPrefix) {
+		deviceInfo.DeviceToken = harmony.TokenPrefix + deviceInfo.DeviceToken
 	}
 
 	// if deviceInfo.DeviceKey=="", newKey will be filled with a new uuid

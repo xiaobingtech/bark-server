@@ -10,6 +10,7 @@ import (
 
 	"github.com/finb/bark-server/v2/apns"
 	"github.com/finb/bark-server/v2/database"
+	"github.com/finb/bark-server/v2/harmony"
 
 	jsoniter "github.com/json-iterator/go"
 
@@ -50,6 +51,9 @@ func runServer(c *cli.Context) error {
 	fiberApp := createFiberApp(c, network)
 	setupRouter(c, fiberApp)
 	initializeDatabase(c)
+	if err := setupHarmony(c); err != nil {
+		return err
+	}
 	setupGracefulShutdown(fiberApp)
 	return startServer(c, fiberApp, network)
 }
@@ -137,6 +141,10 @@ func setupGracefulShutdown(fiberApp *fiber.App) {
 			}
 		}
 	}()
+}
+
+func setupHarmony(c *cli.Context) error {
+	return harmony.Init(c.Int("max-harmony-client-count"), c.String("harmony-domain"))
 }
 
 func startServer(c *cli.Context, fiberApp *fiber.App, network string) error {
@@ -293,6 +301,18 @@ func getAppFlags() []cli.Flag {
 			EnvVars: []string{"BARK_SERVER_MAX_APNS_CLIENT_COUNT"},
 			Value:   1,
 			Action:  func(ctx *cli.Context, v int) error { return apns.ReCreateAPNS(v) },
+		},
+		&cli.StringFlag{
+			Name:    "harmony-domain",
+			Usage:   "HarmonyOS PushKit server domain",
+			EnvVars: []string{"BARK_SERVER_HARMONY_DOMAIN"},
+			Value:   "push-api.cloud.huawei.com",
+		},
+		&cli.IntFlag{
+			Name:    "max-harmony-client-count",
+			Usage:   "Maximum number of HarmonyOS PushKit client connections",
+			EnvVars: []string{"BARK_SERVER_MAX_HARMONY_CLIENT_COUNT"},
+			Value:   1,
 		},
 		&cli.IntFlag{
 			Name:    "concurrency",

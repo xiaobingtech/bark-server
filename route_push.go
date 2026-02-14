@@ -9,6 +9,7 @@ import (
 	"github.com/gofiber/fiber/v2/utils"
 
 	"github.com/finb/bark-server/v2/apns"
+	"github.com/finb/bark-server/v2/harmony"
 
 	"github.com/gofiber/fiber/v2"
 )
@@ -259,6 +260,24 @@ func push(params map[string]interface{}) (int, error) {
 	deviceToken, err := db.DeviceTokenByKey(msg.DeviceKey)
 	if err != nil {
 		return 400, fmt.Errorf("failed to get device token: %v", err)
+	}
+
+	if strings.HasPrefix(deviceToken, harmony.TokenPrefix) {
+		msg.DeviceToken = strings.TrimPrefix(deviceToken, harmony.TokenPrefix)
+		if msg.DeviceToken == "" {
+			return 400, fmt.Errorf("device token is empty")
+		}
+		code, err := harmony.Push(&harmony.PushMessage{
+			DeviceToken: msg.DeviceToken,
+			Title:       msg.Title,
+			Body:        msg.Body,
+			ExtParams:   msg.ExtParams,
+			IsDelete:    msg.IsDelete(),
+		})
+		if err != nil {
+			return 500, fmt.Errorf("push failed: %v", err)
+		}
+		return code, nil
 	}
 
 	msg.DeviceToken = deviceToken
