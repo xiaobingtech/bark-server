@@ -85,7 +85,8 @@ type backgroundPayload struct {
 }
 
 type pushOptions struct {
-	Ttl int64 `json:"ttl,omitempty"`
+	Ttl         int64 `json:"ttl,omitempty"`
+	TestMessage bool  `json:"testMessage,omitempty"`
 }
 
 type target struct {
@@ -175,9 +176,9 @@ func Push(msg *PushMessage) (int, error) {
 		payload = alertPayload{Notification: noti}
 	}
 
-	var options *pushOptions
+	options := &pushOptions{TestMessage: true}
 	if ttl, ok := toInt64(msg.ExtParams["ttl"]); ok && ttl > 0 {
-		options = &pushOptions{Ttl: ttl}
+		options.Ttl = ttl
 	}
 
 	reqBody, err := json.Marshal(message{
