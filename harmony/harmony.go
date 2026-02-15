@@ -71,6 +71,7 @@ type notification struct {
 	Body           string      `json:"body,omitempty"`
 	ClickAction    clickAction `json:"clickAction"`
 	Style          int         `json:"style,omitempty"`
+	InboxContent   []string    `json:"inboxContent,omitempty"`
 	Image          string      `json:"image,omitempty"`
 	Sound          string      `json:"sound,omitempty"`
 	ForegroundShow *bool       `json:"foregroundShow,omitempty"`
@@ -176,6 +177,13 @@ func Push(msg *PushMessage) (int, error) {
 		}
 		if style, ok := toInt(msg.ExtParams["style"]); ok {
 			noti.Style = style
+		}
+		inboxContent := getInboxContent(msg.ExtParams)
+		if len(inboxContent) > 0 {
+			noti.InboxContent = inboxContent
+			if noti.Style == 0 {
+				noti.Style = 3
+			}
 		}
 		if fg, ok := toBool(msg.ExtParams["foreground_show"]); ok {
 			noti.ForegroundShow = &fg
@@ -299,6 +307,75 @@ func getString(params map[string]interface{}, key string, def string) string {
 		}
 	}
 	return def
+}
+
+func getInboxContent(params map[string]interface{}) []string {
+	keys := []string{"inboxContent", "inbox_content", "inboxcontent"}
+	for _, key := range keys {
+		val, ok := getParam(params, key)
+		if !ok {
+			continue
+		}
+		switch v := val.(type) {
+		case []string:
+			return sanitizeStringSlice(v)
+		case []interface{}:
+			result := make([]string, 0, len(v))
+			for _, item := range v {
+				text := strings.TrimSpace(fmt.Sprint(item))
+				if text != "" {
+					result = append(result, text)
+				}
+			}
+			return result
+		case string:
+			return splitInboxContent(v)
+		default:
+			text := strings.TrimSpace(fmt.Sprint(v))
+			if text != "" {
+				return []string{text}
+			}
+		}
+	}
+	return nil
+}
+
+func getParam(params map[string]interface{}, key string) (interface{}, bool) {
+	for k, v := range params {
+		if strings.EqualFold(k, key) {
+			return v, true
+		}
+	}
+	return nil, false
+}
+
+func sanitizeStringSlice(values []string) []string {
+	result := make([]string, 0, len(values))
+	for _, item := range values {
+		text := strings.TrimSpace(item)
+		if text != "" {
+			result = append(result, text)
+		}
+	}
+	return result
+}
+
+func splitInboxContent(value string) []string {
+	raw := strings.TrimSpace(value)
+	if raw == "" {
+		return nil
+	}
+	var parts []string
+	if strings.Contains(raw, "|") {
+		parts = strings.Split(raw, "|")
+	} else if strings.Contains(raw, "\n") {
+		parts = strings.Split(raw, "\n")
+	} else if strings.Contains(raw, ",") {
+		parts = strings.Split(raw, ",")
+	} else {
+		parts = []string{raw}
+	}
+	return sanitizeStringSlice(parts)
 }
 
 func toBool(val interface{}) (bool, bool) {
