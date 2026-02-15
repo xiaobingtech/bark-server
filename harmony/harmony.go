@@ -72,6 +72,7 @@ type notification struct {
 	ClickAction    clickAction `json:"clickAction"`
 	Style          int         `json:"style,omitempty"`
 	Image          string      `json:"image,omitempty"`
+	Sound          string      `json:"sound,omitempty"`
 	ForegroundShow *bool       `json:"foregroundShow,omitempty"`
 	ExtraData      interface{} `json:"extraData,omitempty"`
 }
@@ -166,6 +167,12 @@ func Push(msg *PushMessage) (int, error) {
 		}
 		if image, ok := msg.ExtParams["image"]; ok {
 			noti.Image = fmt.Sprint(image)
+		}
+		if sound, ok := msg.ExtParams["sound"]; ok {
+			soundValue := strings.TrimSpace(fmt.Sprint(sound))
+			if soundValue != "" {
+				noti.Sound = soundValue
+			}
 		}
 		if style, ok := toInt(msg.ExtParams["style"]); ok {
 			noti.Style = style

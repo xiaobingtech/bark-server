@@ -236,6 +236,7 @@ func push(params map[string]interface{}) (int, error) {
 				} else {
 					msg.Sound = val + ".caf"
 				}
+				msg.ExtParams["sound"] = val
 			default:
 				msg.ExtParams[strings.ToLower(string(key))] = val
 			}
