@@ -6,13 +6,22 @@ the V2 version.**
 
 - [API V2](#api-v2)
     * [Push](#push)
+        + [Compatibility Endpoints](#compatibility-endpoints)
         + [curl](#curl)
         + [golang](#golang)
         + [python](#python)
         + [java](#java)
         + [nodejs](#nodejs)
         + [php](#php)
+    * [Register](#register)
+        + [Register Device](#register-device)
+        + [Register Check](#register-check)
+        + [Register Compatibility](#register-compatibility)
+    * [MCP](#mcp)
+        + [Generic Endpoint](#generic-endpoint)
+        + [Device Specific Endpoint](#device-specific-endpoint)
     * [Misc](#misc)
+        + [Root](#root)
         + [Ping](#ping)
         + [Healthz](#healthz)
         + [Info](#info)
@@ -39,6 +48,19 @@ the V2 version.**
 | isArchive (optional) | string | Value must be `1`. Whether or not should be archived by the app |
 | url (optional) | string | Url that will jump when click notification |
 | action (optional) | string | Set to "none", tap notifications do nothing |
+
+### Compatibility Endpoints
+
+The following endpoints are provided for V1 compatibility and accept parameters via URL path, query string, form, or multipart form data:
+
+- `GET /:device_key`
+- `POST /:device_key`
+- `GET /:device_key/:body`
+- `POST /:device_key/:body`
+- `GET /:device_key/:title/:body`
+- `POST /:device_key/:title/:body`
+- `GET /:device_key/:title/:subtitle/:body`
+- `POST /:device_key/:title/:subtitle/:body`
 
 ### curl
 
@@ -264,7 +286,58 @@ curl_close($curl);
 echo $response;
 ```
 
+## Register
+
+| Field | Type | Description |
+| ----- | ---- | ----------- |
+| device_key (optional) | string | Device key. If empty, server generates a new key |
+| device_token | string | Device token. Required |
+| platform (optional) | string | Platform identifier, e.g. `harmony`, `harmonyos`, `hmos` |
+| key (optional) | string | V1 compatibility for device_key |
+| devicetoken (optional) | string | V1 compatibility for device_token |
+
+### Register Device
+
+```sh
+curl -X "POST" "http://127.0.0.1:8080/register" \
+     -H 'Content-Type: application/json; charset=utf-8' \
+     -d $'{
+  "device_token": "xxxx",
+  "platform": "ios"
+}'
+```
+
+### Register Check
+
+```sh
+curl "http://127.0.0.1:8080/register/{device_key}"
+```
+
+### Register Compatibility
+
+```sh
+curl "http://127.0.0.1:8080/register?devicetoken=xxxx&key=yyyy"
+```
+
+## MCP
+
+MCP endpoints provide a Streamable HTTP server for tool-based notification sending. For details on request and response formats, see [MCP.md](./MCP.md).
+
+### Generic Endpoint
+
+- `ALL /mcp`
+
+### Device Specific Endpoint
+
+- `ALL /mcp/:device_key`
+
 ## Misc
+
+### Root
+
+```sh
+curl "http://127.0.0.1:8080/"
+```
 
 ### Ping
 
