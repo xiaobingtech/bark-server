@@ -65,6 +65,11 @@ type clickAction struct {
 	ActionType int `json:"actionType"`
 }
 
+type badge struct {
+	AddNum int `json:"addNum,omitempty"`
+	SetNum int `json:"setNum,omitempty"`
+}
+
 type notification struct {
 	Category       string      `json:"category,omitempty"`
 	Title          string      `json:"title,omitempty"`
@@ -72,6 +77,7 @@ type notification struct {
 	ClickAction    clickAction `json:"clickAction"`
 	Style          int         `json:"style,omitempty"`
 	InboxContent   []string    `json:"inboxContent,omitempty"`
+	Badge          *badge      `json:"badge,omitempty"`
 	Image          string      `json:"image,omitempty"`
 	Sound          string      `json:"sound,omitempty"`
 	ForegroundShow *bool       `json:"foregroundShow,omitempty"`
@@ -168,6 +174,9 @@ func Push(msg *PushMessage) (int, error) {
 		}
 		if image, ok := msg.ExtParams["image"]; ok {
 			noti.Image = fmt.Sprint(image)
+		}
+		if badgeValue := buildBadge(msg.ExtParams); badgeValue != nil {
+			noti.Badge = badgeValue
 		}
 		if sound, ok := msg.ExtParams["sound"]; ok {
 			soundValue := strings.TrimSpace(fmt.Sprint(sound))
@@ -376,6 +385,49 @@ func splitInboxContent(value string) []string {
 		parts = []string{raw}
 	}
 	return sanitizeStringSlice(parts)
+}
+
+func buildBadge(params map[string]interface{}) *badge {
+	badgeValue, ok := getParam(params, "badge")
+	if ok {
+		switch v := badgeValue.(type) {
+		case map[string]interface{}:
+			addNum, _ := toInt(v["addNum"])
+			setNum, _ := toInt(v["setNum"])
+			if addNum != 0 || setNum != 0 {
+				return &badge{AddNum: addNum, SetNum: setNum}
+			}
+		default:
+			value, ok := toInt(v)
+			if ok {
+				if value > 0 {
+					return &badge{SetNum: value}
+				}
+				if value == 0 {
+					return &badge{SetNum: 0}
+				}
+			}
+		}
+	}
+	addNum := getIntParam(params, []string{"badge_add", "badgeadd", "addNum", "badgeAdd"})
+	setNum := getIntParam(params, []string{"badge_set", "badgeset", "setNum", "badgeSet"})
+	if addNum != 0 || setNum != 0 {
+		return &badge{AddNum: addNum, SetNum: setNum}
+	}
+	return nil
+}
+
+func getIntParam(params map[string]interface{}, keys []string) int {
+	for _, key := range keys {
+		val, ok := getParam(params, key)
+		if !ok {
+			continue
+		}
+		if parsed, ok := toInt(val); ok {
+			return parsed
+		}
+	}
+	return 0
 }
 
 func toBool(val interface{}) (bool, bool) {
