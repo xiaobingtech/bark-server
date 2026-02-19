@@ -30,22 +30,18 @@
 ![Docker Automated build](https://img.shields.io/docker/automated/finab/bark-server.svg) ![Image Size](https://img.shields.io/docker/image-size/finab/bark-server?sort=date) ![License](https://img.shields.io/github/license/finb/bark-server)
 
 ``` sh
-docker run -dt --name bark -p 8080:8080 -v `pwd`/bark-data:/data finab/bark-server
-```
-
-``` sh
-docker run -dt --name bark -p 8080:8080 -v `pwd`/bark-data:/data ghcr.io/finb/bark-server
+docker run -dt --name bark -p 8080:8080 -v `pwd`/bark-data:/data xiaobingtech/bark-server:latest
 ```
 
 ``` sh
 mkdir bark-server && cd bark-server
-curl -sL https://github.com/Finb/bark-server/raw/master/deploy/docker-compose.yaml > docker-compose.yaml
+curl -sL https://github.com/xiaobingtech/bark-server/raw/master/deploy/docker-compose.yaml > docker-compose.yaml
 docker compose up -d
 ```
 
 ### 二进制运行
 
-- 1、从 [releases](https://github.com/Finb/bark-server/releases) 下载预编译版本  
+- 1、从 [releases](https://github.com/xiaobingtech/bark-server/releases) 下载预编译版本  
 - 2、`chmod +x bark-server`  
 - 3、`./bark-server --addr 0.0.0.0:8080 --data ./bark-data`  
 - 4、`curl localhost:8080/ping`  
