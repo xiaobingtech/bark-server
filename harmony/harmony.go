@@ -167,7 +167,7 @@ func Push(msg *PushMessage) (int, error) {
 		payload = backgroundPayload{ExtraData: buildExtraData(msg.ExtParams)}
 	} else {
 		noti := notification{
-			Category:    getString(msg.ExtParams, "category", "MARKETING"),
+			Category:    getString(msg.ExtParams, "category", "WORK"),
 			Title:       msg.Title,
 			Body:        msg.Body,
 			ClickAction: clickAction{ActionType: 0},
@@ -200,7 +200,7 @@ func Push(msg *PushMessage) (int, error) {
 		payload = alertPayload{Notification: noti}
 	}
 
-	options := &pushOptions{TestMessage: true}
+	options := &pushOptions{TestMessage: false}
 	if ttl, ok := toInt64(msg.ExtParams["ttl"]); ok && ttl > 0 {
 		options.Ttl = ttl
 	}
