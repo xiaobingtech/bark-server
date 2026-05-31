@@ -46,6 +46,7 @@ the V2 version.**
 | group (optional) | string | The group of the notification |
 | ciphertext (optional) | string | The ciphertext of encrypted push notifications |
 | isArchive (optional) | string | Value must be `1`. Whether or not should be archived by the app |
+| ttl (optional) | integer | Time to live for archived messages, in seconds. Expired archived messages are deleted automatically |
 | url (optional) | string | Url that will jump when click notification |
 | action (optional) | string | Set to "none", tap notifications do nothing |
 

@@ -51,7 +51,10 @@ func setupGenericMCPServer() *server.StreamableHTTPServer {
 	)
 
 	s.AddTool(mcp.NewTool("notify", opts...), notifyHandler)
-	return server.NewStreamableHTTPServer(s)
+	return server.NewStreamableHTTPServer(s,
+		// Disable SSE streaming to avoid long-lived server->client connections on this deployment path.
+		server.WithDisableStreaming(true),
+	)
 }
 
 func setupSpecificMCPServer() *server.StreamableHTTPServer {
@@ -61,7 +64,10 @@ func setupSpecificMCPServer() *server.StreamableHTTPServer {
 	)
 
 	s.AddTool(mcp.NewTool("notify", getCommonToolOpts()...), notifyHandler)
-	return server.NewStreamableHTTPServer(s)
+	return server.NewStreamableHTTPServer(s,
+		// Disable SSE streaming to avoid long-lived server->client connections on this deployment path.
+		server.WithDisableStreaming(true),
+	)
 }
 
 func notifyHandler(ctx context.Context, request mcp.CallToolRequest) (*mcp.CallToolResult, error) {
@@ -118,6 +124,7 @@ func getCommonToolOpts() []mcp.ToolOption {
 		mcp.WithString("image", mcp.Description("Notification image URL")),
 		mcp.WithString("group", mcp.Description("Notification group")),
 		mcp.WithString("isArchive", mcp.Description("Set to '1' to save the notification or any other value to skip saving")),
+		mcp.WithNumber("ttl", mcp.Description("Time to live in seconds for archived messages; expired items are automatically deleted")),
 		mcp.WithString("url", mcp.Description("Click action URL")),
 		mcp.WithString("copy", mcp.Description("Text to copy on copy action")),
 	}
