@@ -181,6 +181,9 @@ func Push(msg *PushMessage) (int, error) {
 		if sound, ok := msg.ExtParams["sound"]; ok {
 			soundValue := strings.TrimSpace(fmt.Sprint(sound))
 			if soundValue != "" {
+				if !strings.HasSuffix(soundValue, ".mp3") {
+					soundValue += ".mp3"
+				}
 				noti.Sound = soundValue
 			}
 		}
