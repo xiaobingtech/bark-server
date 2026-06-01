@@ -179,7 +179,7 @@ func Push(msg *PushMessage) (int, error) {
 			noti.Badge = badgeValue
 		}
 		if sound, ok := msg.ExtParams["sound"]; ok {
-			soundValue := normalizeSound(fmt.Sprint(sound))
+			soundValue := strings.TrimSpace(fmt.Sprint(sound))
 			if soundValue != "" {
 				noti.Sound = soundValue
 			}
@@ -234,7 +234,7 @@ func Push(msg *PushMessage) (int, error) {
 	defer resp.Body.Close()
 	body, _ := io.ReadAll(resp.Body)
 	if resp.StatusCode != http.StatusOK {
-		return resp.StatusCode, errors.New(strings.TrimSpace(string(body)))
+		return resp.StatusCode, fmt.Errorf(strings.TrimSpace(string(body)))
 	}
 	return 200, nil
 }
@@ -316,14 +316,6 @@ func getString(params map[string]interface{}, key string, def string) string {
 		}
 	}
 	return def
-}
-
-func normalizeSound(sound string) string {
-	sound = strings.TrimSpace(sound)
-	if sound == "" || strings.HasSuffix(strings.ToLower(sound), ".mp3") {
-		return sound
-	}
-	return sound + ".mp3"
 }
 
 func getInboxContent(params map[string]interface{}) []string {
