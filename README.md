@@ -323,8 +323,7 @@ bark-server/
 
 ## 相关项目
 
-- [Bark iOS App](https://github.com/Finb/Bark) - iOS 客户端
-- [Bark](https://github.com/sunbinyuan/Bark) - 原版服务端
+- [Shark HarmonyOS App](https://github.com/xiaobingtech/Shark) - HarmonyOS 客户端
 
 ## License
 
